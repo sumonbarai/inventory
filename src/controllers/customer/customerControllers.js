@@ -1,7 +1,7 @@
 const CustomerModel = require("../../models/customer/customerModel");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
-const findByPropertyService = require("../../services/common/findByPropertyService");
+
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
@@ -17,25 +17,8 @@ const createCustomer = async (req, res, next) => {
     if (!address) throw customError("Customer address required", 400);
     if (!mobile) throw customError("Customer mobile required", 400);
 
-    // checking email address exits or not
-    if (email) {
-      const customer = await findByPropertyService(CustomerModel, {
-        userEmail,
-        email,
-      });
-      if (customer) throw customError("email address already exits", 400);
-    }
-    // checking mobile exits or not
-    if (mobile) {
-      const customer = await findByPropertyService(CustomerModel, {
-        userEmail,
-        mobile,
-      });
-      if (customer) throw customError("mobile already exits", 400);
-    }
-
     // now crate a new customer
-    const brand = await createService(CustomerModel, {
+    const customer = await createService(CustomerModel, {
       userEmail,
       name,
       email,
@@ -46,7 +29,7 @@ const createCustomer = async (req, res, next) => {
     // every think is ok now response to client
     res.status(200).json({
       message: "customer create successfully",
-      data: brand,
+      data: customer,
     });
   } catch (error) {
     next(error);
@@ -57,26 +40,6 @@ const updateCustomer = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userEmail = req.headers?.email;
-
-    // validation
-    if (!id) throw customError("customer id required", 400);
-
-    // checking email address exits or not
-    if (req.body.email) {
-      const customer = await findByPropertyService(CustomerModel, {
-        userEmail,
-        email: req.body.email,
-      });
-      if (customer) throw customError("email address already exits", 400);
-    }
-    // checking mobile exits or not
-    if (req.body.mobile) {
-      const customer = await findByPropertyService(CustomerModel, {
-        userEmail,
-        mobile: req.body.mobile,
-      });
-      if (customer) throw customError("mobile already exits", 400);
-    }
 
     const result = await updateService(
       CustomerModel,

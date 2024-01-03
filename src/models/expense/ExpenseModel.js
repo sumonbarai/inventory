@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, default: mongoose } = require("mongoose");
 
 const dataSchema = new Schema(
   {
@@ -13,26 +13,24 @@ const dataSchema = new Schema(
       required: true,
       trim: true,
     },
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-    },
-    address: {
-      type: String,
+    typeId: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       trim: true,
     },
-    mobile: {
-      type: String,
+    amount: {
+      type: Number,
       required: true,
+      trim: true,
+    },
+    note: {
+      type: String,
       trim: true,
     },
   },
   { versionKey: false, timestamps: true }
 );
 
-const CustomerModel = model("Customer", dataSchema);
+const ExpenseModel = model("Expense", dataSchema);
 
-module.exports = CustomerModel;
+module.exports = ExpenseModel;

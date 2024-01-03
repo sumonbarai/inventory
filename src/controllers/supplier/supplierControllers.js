@@ -1,7 +1,6 @@
 const SupplierModel = require("../../models/supplier/supplierModel");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
-const findByPropertyService = require("../../services/common/findByPropertyService");
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
@@ -17,25 +16,8 @@ const createSupplier = async (req, res, next) => {
     if (!address) throw customError("supplier address required", 400);
     if (!mobile) throw customError("supplier mobile required", 400);
 
-    // checking email address exits or not
-    if (email) {
-      const supplier = await findByPropertyService(SupplierModel, {
-        userEmail,
-        email,
-      });
-      if (supplier) throw customError("email address already exits", 400);
-    }
-    // checking mobile exits or not
-    if (mobile) {
-      const supplier = await findByPropertyService(SupplierModel, {
-        userEmail,
-        mobile,
-      });
-      if (supplier) throw customError("mobile already exits", 400);
-    }
-
     // now crate a new supplier
-    const brand = await createService(SupplierModel, {
+    const supplier = await createService(SupplierModel, {
       userEmail,
       name,
       email,
@@ -46,7 +28,7 @@ const createSupplier = async (req, res, next) => {
     // every think is ok now response to client
     res.status(200).json({
       message: "supplier create successfully",
-      data: brand,
+      data: supplier,
     });
   } catch (error) {
     next(error);
@@ -57,26 +39,6 @@ const updateSupplier = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userEmail = req.headers?.email;
-
-    // validation
-    if (!id) throw customError("supplier id required", 400);
-
-    // checking email address exits or not
-    if (req.body.email) {
-      const supplier = await findByPropertyService(SupplierModel, {
-        userEmail,
-        email: req.body.email,
-      });
-      if (supplier) throw customError("email address already exits", 400);
-    }
-    // checking mobile exits or not
-    if (req.body.mobile) {
-      const supplier = await findByPropertyService(SupplierModel, {
-        userEmail,
-        mobile: req.body.mobile,
-      });
-      if (supplier) throw customError("mobile already exits", 400);
-    }
 
     const result = await updateService(
       SupplierModel,

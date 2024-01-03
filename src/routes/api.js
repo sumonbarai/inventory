@@ -6,6 +6,8 @@ const categoryControllers = require("../controllers/category/categoryControllers
 const supplierControllers = require("../controllers/supplier/supplierControllers");
 const customerControllers = require("../controllers/customer/customerControllers");
 const expenseTypeControllers = require("../controllers/expense/expenseTypeControllers");
+const expenseControllers = require("../controllers/expense/expenseControllers");
+const productControllers = require("../controllers/product/productControllers");
 
 const router = express.Router();
 
@@ -53,5 +55,16 @@ router.post("/create-expenseType", authenticateMiddleware, expenseTypeController
 router.put("/update-expenseType/:id", authenticateMiddleware, expenseTypeControllers.updateExpenseType);
 router.get("/expenseType-list", authenticateMiddleware, expenseTypeControllers.expenseTypeList);
 router.get("/expenseType-dropdown", authenticateMiddleware, expenseTypeControllers.expenseTypeDropDown);
+
+// expense
+router.post("/create-expense", authenticateMiddleware, expenseControllers.createExpense);
+router.put("/update-expense/:id", authenticateMiddleware, expenseControllers.updateExpense);
+router.get("/expense-list", authenticateMiddleware, expenseControllers.expenseList);
+
+// Product
+router.post("/create-product", authenticateMiddleware, productControllers.createProduct);
+router.put("/update-product/:id", authenticateMiddleware, productControllers.updateProduct);
+router.get("/product-list", authenticateMiddleware, productControllers.ProductList);
+router.get("/product-dropdown", authenticateMiddleware, productControllers.ProductDropDown);
 
 module.exports = router;

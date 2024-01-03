@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, default: mongoose } = require("mongoose");
 
 const dataSchema = new Schema(
   {
@@ -13,18 +13,22 @@ const dataSchema = new Schema(
       required: true,
       trim: true,
     },
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-    },
-    address: {
-      type: String,
+    brandId: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       trim: true,
     },
-    mobile: {
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      trim: true,
+    },
+    details: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    unit: {
       type: String,
       required: true,
       trim: true,
@@ -33,6 +37,6 @@ const dataSchema = new Schema(
   { versionKey: false, timestamps: true }
 );
 
-const CustomerModel = model("Customer", dataSchema);
+const ProductModel = model("Product", dataSchema);
 
-module.exports = CustomerModel;
+module.exports = ProductModel;
