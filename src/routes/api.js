@@ -8,6 +8,7 @@ const customerControllers = require("../controllers/customer/customerControllers
 const expenseTypeControllers = require("../controllers/expense/expenseTypeControllers");
 const expenseControllers = require("../controllers/expense/expenseControllers");
 const productControllers = require("../controllers/product/productControllers");
+const purchaseControllers = require("../controllers/purchase/purchaseControllers");
 
 const router = express.Router();
 
@@ -66,5 +67,9 @@ router.post("/create-product", authenticateMiddleware, productControllers.create
 router.put("/update-product/:id", authenticateMiddleware, productControllers.updateProduct);
 router.get("/product-list", authenticateMiddleware, productControllers.ProductList);
 router.get("/product-dropdown", authenticateMiddleware, productControllers.ProductDropDown);
+
+// Purchase
+router.post("/create-purchase", authenticateMiddleware, purchaseControllers.createPurchase);
+router.get("/purchase-list", authenticateMiddleware, purchaseControllers.PurchaseList);
 
 module.exports = router;
