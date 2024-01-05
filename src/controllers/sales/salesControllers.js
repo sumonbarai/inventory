@@ -1,0 +1,99 @@
+/* eslint-disable no-param-reassign */
+
+const SalesModel = require("../../models/sales/SalesModel");
+const salesProductModel = require("../../models/sales/SalesProductModel");
+const createParentChildService = require("../../services/common/createParentChildService");
+const listOneJoinService = require("../../services/common/listOneJoinService");
+const customError = require("../../utilities/customError");
+
+const createSales = async (req, res, next) => {
+  try {
+    const { parentData } = req.body;
+    const { childData } = req.body;
+    const userEmail = req.headers.email;
+
+    // validation
+    if (!req.body) {
+      throw customError("invalid required", 400);
+    }
+
+    if (typeof parentData !== "object") {
+      throw customError("invalid required", 400);
+    }
+
+    if (!(childData instanceof Array)) {
+      throw customError("invalid required", 400);
+    }
+
+    // inject logged in user email
+    parentData.userEmail = userEmail;
+    childData.forEach((obj) => {
+      obj.userEmail = userEmail;
+    });
+
+    // now crate a new purchase
+    const result = await createParentChildService(
+      SalesModel,
+      salesProductModel,
+      parentData,
+      childData,
+      "salesId"
+    );
+
+    if (!result) {
+      throw customError("transaction roll back error", 400);
+    } else {
+      res.status(200).json({
+        message: "sales create successfully",
+        data: result,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+const salesList = async (req, res, next) => {
+  try {
+    const pageNo = Number(req.query.pageNo) || 1;
+    const perPage = Number(req.query.perPage) || 5;
+    const { searchValue } = req.query;
+    const { email } = req.headers;
+    const queryExp = {
+      $or: [
+        { notes: { $regex: searchValue, $options: "i" } },
+        { "customer.name": { $regex: searchValue, $options: "i" } },
+        { "customer.email": { $regex: searchValue, $options: "i" } },
+        { "customer.mobile": { $regex: searchValue, $options: "i" } },
+      ],
+    };
+    const SearchQuery = searchValue ? queryExp : "";
+    const query = { userEmail: email };
+    const JoinStage = {
+      $lookup: {
+        from: "customers",
+        localField: "customerId",
+        foreignField: "_id",
+        as: "customer",
+      },
+    };
+
+    const data = await listOneJoinService(
+      SalesModel,
+      pageNo,
+      perPage,
+      query,
+      SearchQuery,
+      JoinStage
+    );
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createSales, salesList };

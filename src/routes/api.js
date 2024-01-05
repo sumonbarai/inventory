@@ -9,6 +9,8 @@ const expenseTypeControllers = require("../controllers/expense/expenseTypeContro
 const expenseControllers = require("../controllers/expense/expenseControllers");
 const productControllers = require("../controllers/product/productControllers");
 const purchaseControllers = require("../controllers/purchase/purchaseControllers");
+const salesControllers = require("../controllers/sales/salesControllers");
+const returnControllers = require("../controllers/return/returnControllers");
 
 const router = express.Router();
 
@@ -71,5 +73,13 @@ router.get("/product-dropdown", authenticateMiddleware, productControllers.Produ
 // Purchase
 router.post("/create-purchase", authenticateMiddleware, purchaseControllers.createPurchase);
 router.get("/purchase-list", authenticateMiddleware, purchaseControllers.PurchaseList);
+
+// Sales
+router.post("/create-sales", authenticateMiddleware, salesControllers.createSales);
+router.get("/sales-list", authenticateMiddleware, salesControllers.salesList);
+
+// Return
+router.post("/create-return", authenticateMiddleware, returnControllers.createReturn);
+router.get("/return-list", authenticateMiddleware, returnControllers.returnList);
 
 module.exports = router;
