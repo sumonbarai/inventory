@@ -1,5 +1,6 @@
 const ExpenseModel = require("../../models/expense/ExpenseModel");
 const createService = require("../../services/common/createService");
+const deleteService = require("../../services/common/deleteService");
 const listOneJoinService = require("../../services/common/listOneJoinService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
@@ -101,8 +102,32 @@ const expenseList = async (req, res, next) => {
   }
 };
 
+const deleteExpense = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const { email } = req.headers;
+    if (!_id) throw customError("invalid id", 400);
+
+    // now delete process
+    const result = await deleteService(ExpenseModel, { _id, userEmail: email });
+
+    if (!result) {
+      throw customError("delete failed", 400);
+    }
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createExpense,
   updateExpense,
   expenseList,
+  deleteExpense,
 };

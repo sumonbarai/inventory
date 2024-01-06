@@ -1,31 +1,29 @@
 /* eslint-disable no-param-reassign */
 const { default: mongoose } = require("mongoose");
 
-const createParentChildService = async (
+const deleteParentChildService = async (
   ParentModel,
   ChildModel,
-  parentData,
-  childData,
+  _id,
+  email,
   joinPropertyName
 ) => {
   //  create a session
-
   const session = await mongoose.startSession();
+
   try {
     session.startTransaction();
     //  first database operation
-    const parentOperation = await ParentModel.create([parentData], {
-      session,
-    });
+    const parentOperation = await ParentModel.deleteMany({
+      _id,
+      userEmail: email,
+    }).session(session);
 
     // second database operation
-    //  after successfully operation
-    childData.forEach((obj) => {
-      obj[joinPropertyName] = parentOperation[0]._id;
-    });
-    const childOperation = await ChildModel.create(childData, {
-      session,
-    });
+    const childOperation = await ChildModel.deleteMany({
+      userEmail: email,
+      [joinPropertyName]: _id,
+    }).session(session);
 
     // completed all transaction
     await session.commitTransaction();
@@ -34,8 +32,9 @@ const createParentChildService = async (
   } catch (error) {
     await session.abortTransaction();
     await session.endSession();
+    console.log(error);
     return false;
   }
 };
 
-module.exports = createParentChildService;
+module.exports = deleteParentChildService;

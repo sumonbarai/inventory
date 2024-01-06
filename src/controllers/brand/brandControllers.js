@@ -1,5 +1,10 @@
+/* eslint-disable prefer-destructuring */
+const { default: mongoose } = require("mongoose");
 const BrandModel = require("../../models/brand/BrandModel");
+const ProductModel = require("../../models/product/ProductModel");
+const checkAssociateService = require("../../services/common/checkAssociateService");
 const createService = require("../../services/common/createService");
+const deleteService = require("../../services/common/deleteService");
 const dropDownService = require("../../services/common/dropDownService");
 const findByPropertyService = require("../../services/common/findByPropertyService");
 const listService = require("../../services/common/listService");
@@ -115,9 +120,33 @@ const brandDropDown = async (req, res, next) => {
   }
 };
 
+const deleteBrand = async (req, res, next) => {
+  try {
+    const { email } = req.headers;
+    const { _id } = req.params;
+
+    // search associate model
+    const query = { brandId: new mongoose.Types.ObjectId(_id) };
+    const isExist = await checkAssociateService(ProductModel, query);
+    if (isExist) throw customError("brand associate in product", 400);
+
+    // now delete process
+    const result = await deleteService(BrandModel, { _id, userEmail: email });
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createBrand,
   updateBrand,
   brandList,
   brandDropDown,
+  deleteBrand,
 };

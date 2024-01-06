@@ -3,6 +3,7 @@
 const SalesModel = require("../../models/sales/SalesModel");
 const salesProductModel = require("../../models/sales/SalesProductModel");
 const createParentChildService = require("../../services/common/createParentChildService");
+const deleteParentChildService = require("../../services/common/deleteParentChildService");
 const listOneJoinService = require("../../services/common/listOneJoinService");
 const customError = require("../../utilities/customError");
 
@@ -52,6 +53,7 @@ const createSales = async (req, res, next) => {
     next(error);
   }
 };
+
 const salesList = async (req, res, next) => {
   try {
     const pageNo = Number(req.query.pageNo) || 1;
@@ -96,4 +98,33 @@ const salesList = async (req, res, next) => {
   }
 };
 
-module.exports = { createSales, salesList };
+const deleteSales = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const { email } = req.headers;
+    if (!_id) throw customError("invalid id", 400);
+
+    // now delete process
+    const result = await deleteParentChildService(
+      SalesModel,
+      salesProductModel,
+      _id,
+      email,
+      "salesId"
+    );
+
+    if (!result) {
+      throw customError("delete failed", 400);
+    }
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createSales, salesList, deleteSales };

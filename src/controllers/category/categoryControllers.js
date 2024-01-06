@@ -1,10 +1,14 @@
+const { default: mongoose } = require("mongoose");
 const CategoryModel = require("../../models/category/CategoryModel");
+const checkAssociateService = require("../../services/common/checkAssociateService");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
 const findByPropertyService = require("../../services/common/findByPropertyService");
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
+const ProductModel = require("../../models/product/ProductModel");
+const deleteService = require("../../services/common/deleteService");
 
 const createCategory = async (req, res, next) => {
   try {
@@ -114,9 +118,35 @@ const categoryDropDown = async (req, res, next) => {
   }
 };
 
+const deleteCategory = async (req, res, next) => {
+  try {
+    const { email } = req.headers;
+    const { _id } = req.params;
+
+    // search associate model
+    const query = { categoryId: new mongoose.Types.ObjectId(_id) };
+    const isExist = await checkAssociateService(ProductModel, query);
+    if (isExist) throw customError("category associate in product", 400);
+
+    // now delete process
+    const result = await deleteService(CategoryModel, {
+      _id,
+      userEmail: email,
+    });
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   createCategory,
   updateCategory,
   categoryList,
   categoryDropDown,
+  deleteCategory,
 };

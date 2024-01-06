@@ -2,6 +2,7 @@
 const PurchaseModel = require("../../models/purchase/PurchaseModel");
 const PurchaseProductModel = require("../../models/purchase/PurchaseProductModel");
 const createParentChildService = require("../../services/common/createParentChildService");
+const deleteParentChildService = require("../../services/common/deleteParentChildService");
 const listOneJoinService = require("../../services/common/listOneJoinService");
 const customError = require("../../utilities/customError");
 
@@ -51,6 +52,7 @@ const createPurchase = async (req, res, next) => {
     next(error);
   }
 };
+
 const PurchaseList = async (req, res, next) => {
   try {
     const pageNo = Number(req.query.pageNo) || 1;
@@ -95,4 +97,33 @@ const PurchaseList = async (req, res, next) => {
   }
 };
 
-module.exports = { createPurchase, PurchaseList };
+const deletePurchase = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const { email } = req.headers;
+    if (!_id) throw customError("invalid id", 400);
+
+    // now delete process
+    const result = await deleteParentChildService(
+      PurchaseModel,
+      PurchaseProductModel,
+      _id,
+      email,
+      "purchaseId"
+    );
+
+    if (!result) {
+      throw customError("delete failed", 400);
+    }
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createPurchase, PurchaseList, deletePurchase };

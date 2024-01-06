@@ -34,12 +34,14 @@ router.post("/create-brand", authenticateMiddleware, brandControllers.createBran
 router.put("/update-brand/:id", authenticateMiddleware, brandControllers.updateBrand);
 router.get("/brand-list", authenticateMiddleware, brandControllers.brandList);
 router.get("/brand-dropdown", authenticateMiddleware, brandControllers.brandDropDown);
+router.delete("/delete-brand/:_id", authenticateMiddleware, brandControllers.deleteBrand);
 
 // Category
 router.post("/create-category", authenticateMiddleware, categoryControllers.createCategory);
 router.put("/update-category/:id", authenticateMiddleware, categoryControllers.updateCategory);
 router.get("/category-list", authenticateMiddleware, categoryControllers.categoryList);
 router.get("/category-dropdown", authenticateMiddleware, categoryControllers.categoryDropDown);
+router.delete("/delete-category/:_id", authenticateMiddleware, categoryControllers.deleteCategory);
 
 // Supplier
 router.post("/create-supplier", authenticateMiddleware, supplierControllers.createSupplier);
@@ -63,6 +65,7 @@ router.get("/expenseType-dropdown", authenticateMiddleware, expenseTypeControlle
 router.post("/create-expense", authenticateMiddleware, expenseControllers.createExpense);
 router.put("/update-expense/:id", authenticateMiddleware, expenseControllers.updateExpense);
 router.get("/expense-list", authenticateMiddleware, expenseControllers.expenseList);
+router.delete("/delete-expense/:_id", authenticateMiddleware, expenseControllers.deleteExpense);
 
 // Product
 router.post("/create-product", authenticateMiddleware, productControllers.createProduct);
@@ -73,13 +76,16 @@ router.get("/product-dropdown", authenticateMiddleware, productControllers.Produ
 // Purchase
 router.post("/create-purchase", authenticateMiddleware, purchaseControllers.createPurchase);
 router.get("/purchase-list", authenticateMiddleware, purchaseControllers.PurchaseList);
+router.delete("/delete-purchase/:_id", authenticateMiddleware, purchaseControllers.deletePurchase);
 
 // Sales
 router.post("/create-sales", authenticateMiddleware, salesControllers.createSales);
 router.get("/sales-list", authenticateMiddleware, salesControllers.salesList);
+router.delete("/delete-sales/:_id", authenticateMiddleware, salesControllers.deleteSales);
 
 // Return
 router.post("/create-return", authenticateMiddleware, returnControllers.createReturn);
 router.get("/return-list", authenticateMiddleware, returnControllers.returnList);
+router.delete("/delete-return/:_id", authenticateMiddleware, returnControllers.deleteReturn);
 
 module.exports = router;

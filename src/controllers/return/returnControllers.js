@@ -3,6 +3,7 @@
 const ReturnModel = require("../../models/return/ReturnModel");
 const ReturnProductModel = require("../../models/return/ReturnProductModel");
 const createParentChildService = require("../../services/common/createParentChildService");
+const deleteParentChildService = require("../../services/common/deleteParentChildService");
 const listOneJoinService = require("../../services/common/listOneJoinService");
 const customError = require("../../utilities/customError");
 
@@ -14,15 +15,15 @@ const createReturn = async (req, res, next) => {
 
     // validation
     if (!req.body) {
-      throw customError("invalid required", 400);
+      throw customError("invalid request", 400);
     }
 
     if (typeof parentData !== "object") {
-      throw customError("invalid required", 400);
+      throw customError("invalid request", 400);
     }
 
     if (!(childData instanceof Array)) {
-      throw customError("invalid required", 400);
+      throw customError("invalid request", 400);
     }
 
     // inject logged in user email
@@ -52,6 +53,7 @@ const createReturn = async (req, res, next) => {
     next(error);
   }
 };
+
 const returnList = async (req, res, next) => {
   try {
     const pageNo = Number(req.query.pageNo) || 1;
@@ -95,5 +97,33 @@ const returnList = async (req, res, next) => {
     next(error);
   }
 };
+const deleteReturn = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const { email } = req.headers;
+    if (!_id) throw customError("invalid id", 400);
 
-module.exports = { createReturn, returnList };
+    // now delete process
+    const result = await deleteParentChildService(
+      ReturnModel,
+      ReturnProductModel,
+      _id,
+      email,
+      "returnId"
+    );
+
+    if (!result) {
+      throw customError("delete failed", 400);
+    }
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createReturn, returnList, deleteReturn };
