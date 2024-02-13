@@ -1,9 +1,14 @@
+const { default: mongoose } = require("mongoose");
 const SupplierModel = require("../../models/supplier/supplierModel");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
+const checkAssociateService = require("../../services/common/checkAssociateService");
+const PurchaseModel = require("../../models/purchase/PurchaseModel");
+const deleteService = require("../../services/common/deleteService");
+const findByPropertyService = require("../../services/common/findByPropertyService");
 
 const createSupplier = async (req, res, next) => {
   try {
@@ -29,6 +34,29 @@ const createSupplier = async (req, res, next) => {
     res.status(200).json({
       message: "supplier create successfully",
       data: supplier,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const supplierDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("supplier _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(SupplierModel, query);
+
+    if (!result) throw customError("supplier not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -110,9 +138,37 @@ const supplierDropDown = async (req, res, next) => {
   }
 };
 
+const deleteSupplier = async (req, res, next) => {
+  try {
+    const { email } = req.headers;
+    const { _id } = req.params;
+
+    // search associate model
+    const query = { supplierId: new mongoose.Types.ObjectId(_id) };
+    const isExist = await checkAssociateService(PurchaseModel, query);
+    if (isExist) throw customError("suppler associate in purchase", 400);
+
+    // now delete process
+    const result = await deleteService(SupplierModel, {
+      _id,
+      userEmail: email,
+    });
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSupplier,
+  supplierDetailsById,
   updateSupplier,
   supplierList,
   supplierDropDown,
+  deleteSupplier,
 };

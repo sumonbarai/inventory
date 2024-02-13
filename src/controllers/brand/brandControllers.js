@@ -37,6 +37,28 @@ const createBrand = async (req, res, next) => {
     next(error);
   }
 };
+const brandDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("brand _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(BrandModel, query);
+
+    if (!result) throw customError("brand not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const updateBrand = async (req, res, next) => {
   try {
@@ -145,6 +167,7 @@ const deleteBrand = async (req, res, next) => {
 
 module.exports = {
   createBrand,
+  brandDetailsById,
   updateBrand,
   brandList,
   brandDropDown,

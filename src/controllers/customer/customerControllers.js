@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const CustomerModel = require("../../models/customer/customerModel");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
@@ -5,6 +6,11 @@ const dropDownService = require("../../services/common/dropDownService");
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
+const checkAssociateService = require("../../services/common/checkAssociateService");
+const SalesModel = require("../../models/sales/SalesModel");
+const ReturnModel = require("../../models/return/ReturnModel");
+const deleteService = require("../../services/common/deleteService");
+const findByPropertyService = require("../../services/common/findByPropertyService");
 
 const createCustomer = async (req, res, next) => {
   try {
@@ -30,6 +36,29 @@ const createCustomer = async (req, res, next) => {
     res.status(200).json({
       message: "customer create successfully",
       data: customer,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const customerDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("customer _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(CustomerModel, query);
+
+    if (!result) throw customError("customer not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -112,9 +141,45 @@ const customerDropDown = async (req, res, next) => {
   }
 };
 
+const deleteCustomer = async (req, res, next) => {
+  try {
+    const { email } = req.headers;
+    const { _id } = req.params;
+
+    // search associate model
+    const query = { customerId: new mongoose.Types.ObjectId(_id) };
+
+    {
+      const isExist = await checkAssociateService(SalesModel, query);
+      if (isExist) throw customError("customer associate in sales", 400);
+    }
+
+    {
+      const isExist = await checkAssociateService(ReturnModel, query);
+      if (isExist) throw customError("customer associate in return", 400);
+    }
+
+    // now delete process
+    const result = await deleteService(CustomerModel, {
+      _id,
+      userEmail: email,
+    });
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCustomer,
+  customerDetailsById,
   updateCustomer,
   customerList,
   customerDropDown,
+  deleteCustomer,
 };

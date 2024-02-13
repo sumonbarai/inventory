@@ -1,6 +1,7 @@
 const ExpenseModel = require("../../models/expense/ExpenseModel");
 const createService = require("../../services/common/createService");
 const deleteService = require("../../services/common/deleteService");
+const findByPropertyService = require("../../services/common/findByPropertyService");
 const listOneJoinService = require("../../services/common/listOneJoinService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
@@ -31,6 +32,28 @@ const createExpense = async (req, res, next) => {
   }
 };
 
+const expenseDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("expense _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(ExpenseModel, query);
+
+    if (!result) throw customError("expense not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 const updateExpense = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -127,6 +150,7 @@ const deleteExpense = async (req, res, next) => {
 
 module.exports = {
   createExpense,
+  expenseDetailsById,
   updateExpense,
   expenseList,
   deleteExpense,

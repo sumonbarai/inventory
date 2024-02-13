@@ -36,6 +36,29 @@ const createCategory = async (req, res, next) => {
   }
 };
 
+const categoryDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("category _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(CategoryModel, query);
+
+    if (!result) throw customError("category not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const updateCategory = async (req, res, next) => {
   try {
     const { name } = req.body;
@@ -145,6 +168,7 @@ const deleteCategory = async (req, res, next) => {
 };
 module.exports = {
   createCategory,
+  categoryDetailsById,
   updateCategory,
   categoryList,
   categoryDropDown,

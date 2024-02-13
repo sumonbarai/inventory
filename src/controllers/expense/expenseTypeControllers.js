@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const ExpenseTypeModel = require("../../models/expense/ExpenseTypeModel");
 const createService = require("../../services/common/createService");
 const dropDownService = require("../../services/common/dropDownService");
@@ -5,6 +6,9 @@ const findByPropertyService = require("../../services/common/findByPropertyServi
 const listService = require("../../services/common/listService");
 const updateService = require("../../services/common/updateService");
 const customError = require("../../utilities/customError");
+const checkAssociateService = require("../../services/common/checkAssociateService");
+const deleteService = require("../../services/common/deleteService");
+const ExpenseModel = require("../../models/expense/ExpenseModel");
 
 const createExpenseType = async (req, res, next) => {
   try {
@@ -27,6 +31,29 @@ const createExpenseType = async (req, res, next) => {
     // every think is ok now response to client
     res.status(200).json({
       message: "expenseType create successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const expenseTypeDetailsById = async (req, res, next) => {
+  try {
+    const { _id } = req.params;
+    const userEmail = req.headers?.email;
+
+    // validation
+    if (!_id) throw customError("expense type _id required", 400);
+
+    const query = { _id, userEmail };
+    const result = await findByPropertyService(ExpenseTypeModel, query);
+
+    if (!result) throw customError("expense type not found", 404);
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "success",
       data: result,
     });
   } catch (error) {
@@ -117,9 +144,37 @@ const expenseTypeDropDown = async (req, res, next) => {
   }
 };
 
+const deleteExpenseType = async (req, res, next) => {
+  try {
+    const { email } = req.headers;
+    const { _id } = req.params;
+
+    // search associate model
+    const query = { typeId: new mongoose.Types.ObjectId(_id) };
+    const isExist = await checkAssociateService(ExpenseModel, query);
+    if (isExist) throw customError("expense Type associate in Expense", 400);
+
+    // now delete process
+    const result = await deleteService(ExpenseTypeModel, {
+      _id,
+      userEmail: email,
+    });
+
+    // every think is ok now response to client
+    res.status(200).json({
+      message: "delete success",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createExpenseType,
+  expenseTypeDetailsById,
   updateExpenseType,
   expenseTypeList,
   expenseTypeDropDown,
+  deleteExpenseType,
 };
